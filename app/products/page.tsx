@@ -1,4 +1,4 @@
-import ProductCard from "@/components/ProductCard";
+﻿import ProductCard from "@/components/ProductCard";
 import type { Metadata } from "next";
 import type { Product } from "@/data/products";
 import type { ProductRecord } from "@/app/api/products/route";
@@ -124,7 +124,7 @@ export default async function ProductsPage() {
                     </p>
 
                     <a
-                        href="https://wa.me/919876543210?text=Hello! I'm looking for a custom puja kit."
+                        href="https://wa.me/919121299888?text=Hello! I'm looking for a custom puja kit."
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2.5 bg-green-500 hover:bg-green-400 text-white font-bold px-8 py-3.5 rounded-full transition-all shadow-lg"

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import type { FormEvent } from "react";
@@ -22,7 +22,7 @@ export default function ContactPage() {
     function handleSubmit(e: FormEvent) {
         e.preventDefault();
         const msg = `Hello! I'm ${formData.name}. I'm interested in: ${formData.kit || "a puja kit"}. ${formData.message}. Phone: ${formData.phone}`;
-        const url = `https://wa.me/919876543210?text=${encodeURIComponent(msg)}`;
+        const url = `https://wa.me/919121299888?text=${encodeURIComponent(msg)}`;
         window.open(url, "_blank");
         setSubmitted(true);
     }
@@ -101,7 +101,7 @@ export default function ContactPage() {
                                         required
                                         value={formData.phone}
                                         onChange={handleChange}
-                                        placeholder="+91 98765 43210"
+                                        placeholder="+91 91212 99888"
                                         className="w-full border-2 border-orange-200 focus:border-orange-500 rounded-xl px-4 py-3 text-orange-900 placeholder-orange-300 outline-none transition-colors bg-orange-50/50"
                                     />
                                 </div>
@@ -172,12 +172,12 @@ export default function ContactPage() {
                                 <span>📱</span> WhatsApp (Fastest Response)
                             </h3>
                             <a
-                                href="https://wa.me/919876543210"
+                                href="https://wa.me/919121299888"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-block bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-full transition-all shadow-md"
                             >
-                                Chat: +91 98765 43210
+                                Chat: +91 91212 99888
                             </a>
                             <p className="text-green-700/70 text-sm mt-3">
                                 Typically responds within 30 minutes (9 AM – 8 PM)
@@ -198,8 +198,8 @@ export default function ContactPage() {
                                     {
                                         icon: "📞",
                                         label: "Phone",
-                                        value: "+91 98765 43210",
-                                        href: "tel:+919876543210",
+                                        value: "+91 91212 99888",
+                                        href: "tel:+919121299888",
                                     },
                                     {
                                         icon: "✉️",

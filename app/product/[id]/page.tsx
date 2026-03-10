@@ -10,13 +10,13 @@ import type { Metadata } from "next";
 ---------------------------------------------------- */
 async function getProductFromApi(id: string) {
     try {
-const baseUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        const baseUrl =
+            process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-const res = await fetch(
-  `${baseUrl}/api/products?id=${id}`,
-  { next: { revalidate: 60 } }
-);
+        const res = await fetch(
+            `${baseUrl}/api/products?id=${id}`,
+            { next: { revalidate: 60 } }
+        );
 
         if (!res.ok) return null;
 
@@ -95,7 +95,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     const accent = accentMap[product.id] ?? "bg-orange-600";
 
     const whatsappMsg = `Hello, I want to order ${product.name}`;
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(
+    const whatsappUrl = `https://wa.me/919121299888?text=${encodeURIComponent(
         whatsappMsg
     )}`;
 

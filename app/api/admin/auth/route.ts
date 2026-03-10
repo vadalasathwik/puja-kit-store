@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { generateAdminToken, COOKIE_NAME } from "@/lib/admin-auth";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours

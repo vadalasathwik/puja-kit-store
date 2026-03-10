@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 export default function Footer() {
     return (
@@ -24,7 +24,7 @@ export default function Footer() {
                         </p>
                         <div className="flex gap-3 mt-5">
                             <a
-                                href="https://wa.me/919876543210"
+                                href="https://wa.me/919121299888"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-9 h-9 rounded-full bg-green-600 hover:bg-green-500 flex items-center justify-center transition-colors"
@@ -80,10 +80,10 @@ export default function Footer() {
                             <li className="flex items-center gap-2">
                                 <span>📞</span>
                                 <a
-                                    href="tel:+919876543210"
+                                    href="tel:+919121299888"
                                     className="hover:text-amber-300 transition-colors"
                                 >
-                                    +91 98765 43210
+                                    +91 91212 99888
                                 </a>
                             </li>
                             <li className="flex items-center gap-2">

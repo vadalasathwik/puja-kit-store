@@ -91,7 +91,7 @@ const testimonials = [
 export default async function HomePage() {
   const products = await getProducts();
   const whatsappUrl =
-    "https://wa.me/919876543210?text=" +
+    "https://wa.me/919121299888?text=" +
     encodeURIComponent(
       "Hello! I'd like to order a Puja Kit. Please share the available options and delivery details."
     );

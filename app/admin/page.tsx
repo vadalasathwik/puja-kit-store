@@ -1,4 +1,4 @@
-import { query, isDbConnected } from "@/lib/db";
+﻿import { query, isDbConnected } from "@/lib/db";
 import Link from "next/link";
 
 interface StatRow { count: string }
