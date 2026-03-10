@@ -14,7 +14,7 @@ export default function Navbar() {
 
     return (
         <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-orange-200 shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="container">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">

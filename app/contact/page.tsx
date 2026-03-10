@@ -30,22 +30,24 @@ export default function ContactPage() {
     return (
         <div className="min-h-screen bg-amber-50/30">
             {/* Page Header */}
-            <div className="bg-gradient-to-r from-orange-700 via-orange-600 to-amber-600 text-white py-14 text-center">
-                <p className="text-orange-200 uppercase text-sm font-semibold tracking-widest mb-3">
-                    📞 Get in Touch
-                </p>
-                <h1
-                    className="text-4xl sm:text-5xl font-bold"
-                    style={{ fontFamily: "'Cinzel', serif" }}
-                >
-                    Contact Us
-                </h1>
-                <p className="text-orange-200 mt-3 max-w-md mx-auto">
-                    Have questions about our kits? We&apos;re here to help you choose the right puja kit.
-                </p>
+            <div className="bg-gradient-to-r from-orange-700 via-orange-600 to-amber-600 text-white py-10 sm:py-14">
+                <div className="container text-center">
+                    <p className="text-orange-200 uppercase text-sm font-semibold tracking-widest mb-3 text-center">
+                        📞 Get in Touch
+                    </p>
+                    <h1
+                        className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center"
+                        style={{ fontFamily: "'Cinzel', serif" }}
+                    >
+                        Contact Us
+                    </h1>
+                    <p className="text-orange-200 mt-3 max-w-md mx-auto text-sm sm:text-base text-center">
+                        Have questions about our kits? We&apos;re here to help you choose the right puja kit.
+                    </p>
+                </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+            <div className="container py-14">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     {/* Contact Form */}
                     <div className="bg-white rounded-3xl shadow-md border border-orange-100 p-8">

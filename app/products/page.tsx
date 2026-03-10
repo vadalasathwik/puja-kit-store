@@ -1,6 +1,25 @@
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
 import type { Metadata } from "next";
+import type { Product } from "@/data/products";
+import type { ProductRecord } from "@/app/api/products/route";
+
+async function getProducts(): Promise<Product[]> {
+    try {
+        const baseUrl =
+            process.env.NEXT_PUBLIC_BASE_URL ||
+            `http://localhost:${process.env.PORT ?? 3000}`;
+        const res = await fetch(`${baseUrl}/api/products`, {
+            next: { revalidate: 60 },
+        });
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data: ProductRecord[] = await res.json();
+        return data.map((p) => ({ ...p, badge: p.badge ?? undefined }));
+    } catch (error) {
+        console.error("[ProductsPage] Falling back to static data:", error);
+        const { products } = await import("@/data/products");
+        return products.map((p) => ({ ...p, slug: p.id }));
+    }
+}
 
 export const metadata: Metadata = {
     title: "Puja Kits | Puja Kit Store Hyderabad",
@@ -8,7 +27,8 @@ export const metadata: Metadata = {
         "Explore our collection of authentic ready-made puja kits. Choose the perfect puja kit for your spiritual rituals, festivals, and daily worship.",
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+    const products = await getProducts();
     return (
         <div className="min-h-screen bg-amber-50/30 pb-20">
             {/* ═══════════════════════════════════════════════════════════
@@ -20,7 +40,7 @@ export default function ProductsPage() {
                 <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-white/10 blur-3xl" />
                 <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-black/10 blur-3xl" />
 
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div className="relative container text-center">
                     <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-4">
                         🕉️ Our Collection
                     </span>
@@ -47,15 +67,15 @@ export default function ProductsPage() {
             {/* ═══════════════════════════════════════════════════════════
           PRODUCTS GRID
       ═══════════════════════════════════════════════════════════ */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+            <section className="container py-12 lg:py-16">
                 {/* Categories / Filter Bar (Visual only for now) */}
-                <div className="flex flex-wrap justify-center gap-3 mb-12">
+                <div className="flex gap-3 mb-12 overflow-x-auto pb-2 justify-start sm:justify-center flex-nowrap sm:flex-wrap px-1">
                     {["All Kits", "Festival", "Vrat Puja", "Ceremony", "Daily"].map((cat) => (
                         <button
                             key={cat}
                             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all border ${cat === "All Kits"
-                                    ? "bg-orange-600 border-orange-600 text-white shadow-md shadow-orange-200"
-                                    : "bg-white border-orange-200 text-orange-800 hover:border-orange-400 hover:bg-orange-50"
+                                ? "bg-orange-600 border-orange-600 text-white shadow-md shadow-orange-200"
+                                : "bg-white border-orange-200 text-orange-800 hover:border-orange-400 hover:bg-orange-50"
                                 }`}
                         >
                             {cat}

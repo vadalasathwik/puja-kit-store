@@ -1,6 +1,29 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import type { Product } from "@/data/products";
+import type { ProductRecord } from "@/app/api/products/route";
+
+async function getProducts(): Promise<Product[]> {
+  try {
+    // In Next.js App Router, server components should use absolute URLs.
+    // NEXT_PUBLIC_BASE_URL can be set in production; in dev we default to localhost.
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      `http://localhost:${process.env.PORT ?? 3000}`;
+    const res = await fetch(`${baseUrl}/api/products`, {
+      next: { revalidate: 60 }, // Revalidate every 60s (ISR)
+    });
+    if (!res.ok) throw new Error("Failed to fetch products");
+    const data: ProductRecord[] = await res.json();
+    // Normalize: convert badge null → undefined to match the Product interface
+    return data.map((p) => ({ ...p, badge: p.badge ?? undefined }));
+  } catch (error) {
+    console.error("[HomePage] Could not fetch from API, using static fallback:", error);
+    // Last-resort inline fallback (should never be needed since the API has its own fallback)
+    const { products } = await import("@/data/products");
+    return products.map((p) => ({ ...p, slug: p.id }));
+  }
+}
 
 /* ─── Static Data ──────────────────────────────────────────────── */
 
@@ -63,7 +86,8 @@ const testimonials = [
 
 /* ─── Page ─────────────────────────────────────────────────────── */
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getProducts();
   const whatsappUrl =
     "https://wa.me/919876543210?text=" +
     encodeURIComponent(
@@ -81,7 +105,7 @@ export default function HomePage() {
         <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-orange-800/30 blur-3xl pointer-events-none" />
         <div className="absolute inset-0 mandala-bg opacity-20" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-14">
+        <div className="relative container py-20 lg:py-28 flex flex-col lg:flex-row items-center gap-14">
           {/* Left: copy */}
           <div className="flex-1 text-center lg:text-left">
             <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-6">
@@ -170,10 +194,10 @@ export default function HomePage() {
           FESTIVAL HIGHLIGHT BANNER
       ═══════════════════════════════════════════════════════════ */}
       <section className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 py-4 overflow-hidden">
-        <div className="flex items-center gap-4 animate-none">
-          <div className="flex items-center gap-6 whitespace-nowrap mx-auto flex-wrap justify-center text-white text-sm sm:text-base font-semibold px-4 text-center">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-center text-white text-sm sm:text-base font-semibold px-4 text-center w-full">
             <span className="text-xl">🐘</span>
-            <span>Ganesh Chaturthi Special Puja Kits Available</span>
+            <span className="text-sm sm:text-base">Ganesh Chaturthi Special Puja Kits</span>
             <span className="text-yellow-200 hidden sm:inline">•</span>
             <span className="hidden sm:inline">Custom Kits for Every Ceremony</span>
             <span className="text-yellow-200 hidden sm:inline">•</span>
@@ -182,7 +206,7 @@ export default function HomePage() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white text-orange-700 font-bold text-xs px-4 py-1.5 rounded-full hover:bg-orange-50 transition-colors ml-2 flex-shrink-0"
+              className="bg-white text-orange-700 font-bold text-xs px-4 py-1.5 rounded-full hover:bg-orange-50 transition-colors flex-shrink-0"
             >
               Order Now →
             </a>
@@ -193,7 +217,7 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════
           2. FEATURED PUJA KITS
       ═══════════════════════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-18">
+      <section className="container py-10 sm:py-12 lg:py-16">
         <div className="text-center mb-12">
           <span className="inline-block text-orange-500 font-bold uppercase tracking-widest text-xs mb-3">
             🪔 Our Collection
@@ -238,8 +262,8 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════
           3. WHY CHOOSE US
       ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-white border-y border-orange-100 py-18">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-white border-y border-orange-100 py-10 sm:py-12 lg:py-16">
+        <div className="container">
           <div className="text-center mb-12">
             <span className="inline-block text-orange-500 font-bold uppercase tracking-widest text-xs mb-3">
               ✨ Our Promise
@@ -256,7 +280,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
             {features.map((f) => (
               <div
                 key={f.title}
@@ -288,7 +312,7 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════
           4. CUSTOMER REVIEWS
       ═══════════════════════════════════════════════════════════ */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-18">
+      <section className="container py-10 sm:py-12 lg:py-16">
         <div className="text-center mb-12">
           <span className="inline-block text-orange-500 font-bold uppercase tracking-widest text-xs mb-3">
             💬 Testimonials
@@ -305,7 +329,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
           {testimonials.map((t) => (
             <div
               key={t.name}
@@ -373,23 +397,29 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════
           5. FESTIVAL HIGHLIGHT BANNER (full section)
       ═══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-orange-900 via-amber-800 to-orange-900 text-white py-16">
+      <section className="relative overflow-hidden bg-gradient-to-br from-orange-900 via-amber-800 to-orange-900 text-white py-10 sm:py-14 lg:py-20">
+        {/* Decorative background */}
         <div className="absolute inset-0 mandala-bg opacity-10" />
         <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <div className="flex justify-center gap-3 text-4xl mb-5">
+        {/* Centered content wrapper aligned with the rest of the page */}
+        <div className="container relative text-center">
+
+          {/* Emoji row */}
+          <div className="flex items-center justify-center gap-4 text-4xl sm:text-5xl mb-5">
             <span>🐘</span>
             <span className="animate-float" style={{ animationDelay: "0.3s" }}>🌼</span>
             <span>🪔</span>
           </div>
 
-          <div className="inline-block bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">
+          {/* Badge */}
+          <div className="inline-flex items-center justify-center bg-amber-400/20 border border-amber-400/40 text-amber-300 text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">
             🎉 Festival Special
           </div>
 
+          {/* Heading */}
           <h2
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight mx-auto max-w-2xl"
             style={{ fontFamily: "'Cinzel', serif" }}
           >
             Ganesh Chaturthi Special
@@ -397,18 +427,20 @@ export default function HomePage() {
             <span className="text-amber-300">Puja Kits Available</span>
           </h2>
 
-          <p className="text-orange-200 text-lg mb-8 max-w-xl mx-auto">
+          {/* Subtext */}
+          <p className="text-orange-200 text-base sm:text-lg mb-8 max-w-xl mx-auto leading-relaxed">
             Celebrate the beloved festival of Lord Ganesha with our specially
             curated Chaturthi kits — complete, authentic, and delivered to your
-            home.
+            doorstep.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* CTA buttons — centered, stack on mobile */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 text-white font-bold px-8 py-4 rounded-full transition-all shadow-xl"
+              className="inline-flex items-center justify-center gap-2.5 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-bold px-8 py-4 rounded-full transition-all shadow-xl hover:shadow-green-500/40 w-full sm:w-auto"
             >
               <svg viewBox="0 0 32 32" className="w-5 h-5 fill-white flex-shrink-0">
                 <path d="M16 .5C7.44.5.5 7.44.5 16c0 2.74.7 5.37 2.04 7.69L.5 31.5l8.09-2.12A15.43 15.43 0 0 0 16 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm7.68 18.59c-.42-.21-2.5-1.23-2.88-1.37-.39-.14-.67-.21-.95.21-.28.42-1.09 1.37-1.34 1.65-.25.28-.49.32-.91.1-.42-.21-1.78-.66-3.4-2.1-1.26-1.12-2.1-2.5-2.35-2.92-.25-.42-.03-.65.19-.86.2-.19.42-.49.63-.74.21-.25.28-.42.42-.7.14-.28.07-.53-.03-.74-.1-.21-.95-2.28-1.3-3.12-.34-.82-.69-.71-.95-.72l-.81-.01c-.28 0-.74.1-1.13.53-.39.42-1.47 1.44-1.47 3.5s1.51 4.06 1.72 4.34c.21.28 2.97 4.53 7.19 6.35.99.43 1.77.69 2.37.88.99.31 1.9.27 2.62.16.8-.12 2.5-1.02 2.85-2 .35-.98.35-1.82.25-2-.1-.17-.38-.27-.8-.49z" />
@@ -417,7 +449,7 @@ export default function HomePage() {
             </a>
             <Link
               href="/product/ganesh-puja-kit"
-              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-8 py-4 rounded-full transition-all"
+              className="inline-flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 border-2 border-white/40 text-white font-semibold px-8 py-4 rounded-full transition-all w-full sm:w-auto"
             >
               🐘 View Kit Details
             </Link>

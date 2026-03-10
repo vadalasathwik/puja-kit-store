@@ -1,12 +1,13 @@
 export interface Product {
   id: string;
   name: string;
+  slug?: string;
   price: number;
   image: string;
   description: string;
   items: string[];
   category: string;
-  badge?: string;
+  badge?: string | null;
 }
 
 export const products: Product[] = [

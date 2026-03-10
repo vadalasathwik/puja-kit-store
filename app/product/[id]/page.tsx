@@ -1,19 +1,40 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { products, getProductById } from "@/data/products";
+import { products as staticProducts, getProductById } from "@/data/products";
+import type { Product } from "@/data/products";
+import type { ProductRecord } from "@/app/api/products/route";
 import type { Metadata } from "next";
+
+async function getProductFromApi(id: string): Promise<Product | null> {
+    try {
+        const baseUrl =
+            process.env.NEXT_PUBLIC_BASE_URL ||
+            `http://localhost:${process.env.PORT ?? 3000}`;
+        const res = await fetch(`${baseUrl}/api/products?id=${encodeURIComponent(id)}`, {
+            next: { revalidate: 60 },
+        });
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error("API error");
+        const data: ProductRecord = await res.json();
+        return { ...data, badge: data.badge ?? undefined };
+    } catch {
+        // Fall back to static data
+        return getProductById(id) ?? null;
+    }
+}
 
 interface PageProps {
     params: Promise<{ id: string }>;
 }
 
 export async function generateStaticParams() {
-    return products.map((p) => ({ id: p.id }));
+    // Keep using static data so Next.js can statically generate all product pages at build time.
+    return staticProducts.map((p) => ({ id: p.id }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { id } = await params;
-    const product = getProductById(id);
+    const product = await getProductFromApi(id);
     if (!product) return { title: "Product Not Found" };
     return {
         title: `${product.name} | Puja Kit Store Hyderabad`,
@@ -44,7 +65,7 @@ const accentMap: Record<string, string> = {
 
 export default async function ProductDetailPage({ params }: PageProps) {
     const { id } = await params;
-    const product = getProductById(id);
+    const product = await getProductFromApi(id);
 
     if (!product) notFound();
 
@@ -55,7 +76,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     const whatsappMsg = `Hello, I want to order ${product.name}`;
     const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(whatsappMsg)}`;
 
-    const relatedProducts = products.filter((p) => p.id !== product.id).slice(0, 3);
+    const relatedProducts = staticProducts.filter((p) => p.id !== product.id).slice(0, 3);
 
     return (
         <div className="min-h-screen bg-amber-50/30">
@@ -64,7 +85,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           BREADCRUMB
       ═══════════════════════════════════════════ */}
             <div className="bg-white border-b border-orange-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center gap-2 text-sm flex-wrap">
+                <div className="container py-3.5 flex items-center gap-2 text-sm flex-wrap">
                     <Link href="/" className="text-orange-500 hover:text-orange-700 transition-colors font-medium">
                         Home
                     </Link>
@@ -80,7 +101,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             {/* ═══════════════════════════════════════════
           MAIN CONTENT
       ═══════════════════════════════════════════ */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+            <div className="container py-8 lg:py-14">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 mb-14">
 
                     {/* ── LEFT: Large Product Image ── */}
@@ -97,9 +118,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
                             <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-orange-300/20 blur-2xl" />
 
                             {/* Main emoji */}
-                            <div className="relative z-10 flex items-center justify-center h-full py-16">
+                            <div className="relative z-10 flex items-center justify-center h-full py-12 sm:py-16">
                                 <span
-                                    className="text-[140px] leading-none select-none drop-shadow-xl"
+                                    className="text-[80px] sm:text-[140px] leading-none select-none drop-shadow-xl"
                                     style={{ animation: "float 3s ease-in-out infinite" }}
                                 >
                                     {emoji}
@@ -120,7 +141,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         </div>
 
                         {/* Thumbnail strip (decorative accents) */}
-                        <div className="grid grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {["🪔", "📿", "🌺", "🥥"].map((icon, i) => (
                                 <div
                                     key={i}
