@@ -10,10 +10,13 @@ import type { Metadata } from "next";
 ---------------------------------------------------- */
 async function getProductFromApi(id: string) {
     try {
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/products?id=${id}`,
-            { cache: "no-store" }
-        );
+const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+const res = await fetch(
+  `${baseUrl}/api/products?id=${id}`,
+  { next: { revalidate: 60 } }
+);
 
         if (!res.ok) return null;
 

@@ -8,11 +8,13 @@ async function getProducts(): Promise<Product[]> {
     // In Next.js App Router, server components should use absolute URLs.
     // NEXT_PUBLIC_BASE_URL can be set in production; in dev we default to localhost.
     const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      `http://localhost:${process.env.PORT ?? 3000}`;
+      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
     const res = await fetch(`${baseUrl}/api/products`, {
-      next: { revalidate: 60 }, // Revalidate every 60s (ISR)
+      next: { revalidate: 60 },
     });
+
+
     if (!res.ok) throw new Error("Failed to fetch products");
     const data: ProductRecord[] = await res.json();
     // Normalize: convert badge null → undefined to match the Product interface
