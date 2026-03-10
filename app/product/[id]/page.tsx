@@ -201,7 +201,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     </h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {product.items.map((item, index) => (
+                        {product.items.map((item: string, index: number) => (
                             <div
                                 key={index}
                                 className="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3"
