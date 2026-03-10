@@ -8,32 +8,24 @@ import type { Metadata } from "next";
 /* ----------------------------------------------------
    Fetch product from API
 ---------------------------------------------------- */
-async function getProductFromApi(id: string): Promise<Product | null> {
+async function getProductFromApi(id: string) {
     try {
         const res = await fetch(
-            `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/products?id=${encodeURIComponent(id)}`,
-            {
-                next: { revalidate: 60 },
-            }
+            `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/products?id=${id}`,
+            { cache: "no-store" }
         );
 
-        if (res.status === 404) return null;
-        if (!res.ok) throw new Error("API error");
+        if (!res.ok) return null;
 
-        const data: ProductRecord = await res.json();
-
-        return {
-            ...data,
-            badge: data.badge ?? undefined,
-        };
-    } catch {
-        // fallback to static data if API fails
-        return getProductById(id) ?? null;
+        return await res.json();
+    } catch (error) {
+        console.error("API fetch failed:", error);
+        return null;
     }
 }
 
 interface PageProps {
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }
 
 /* ----------------------------------------------------
@@ -46,10 +38,9 @@ export async function generateStaticParams() {
 /* ----------------------------------------------------
    SEO Metadata
 ---------------------------------------------------- */
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
-    const product = await getProductFromApi(params.id);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { id } = await params;
+    const product = await getProductFromApi(id);
 
     if (!product) {
         return {
@@ -91,7 +82,8 @@ const accentMap: Record<string, string> = {
    Page
 ---------------------------------------------------- */
 export default async function ProductDetailPage({ params }: PageProps) {
-    const product = await getProductFromApi(params.id);
+    const { id } = await params;
+    const product = await getProductFromApi(id);
 
     if (!product) notFound();
 
