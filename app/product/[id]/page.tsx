@@ -5,43 +5,67 @@ import type { Product } from "@/data/products";
 import type { ProductRecord } from "@/app/api/products/route";
 import type { Metadata } from "next";
 
+/* ----------------------------------------------------
+   Fetch product from API
+---------------------------------------------------- */
 async function getProductFromApi(id: string): Promise<Product | null> {
     try {
-        const baseUrl =
-            process.env.NEXT_PUBLIC_BASE_URL ||
-            `http://localhost:${process.env.PORT ?? 3000}`;
-        const res = await fetch(`${baseUrl}/api/products?id=${encodeURIComponent(id)}`, {
-            next: { revalidate: 60 },
-        });
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/products?id=${encodeURIComponent(id)}`,
+            {
+                next: { revalidate: 60 },
+            }
+        );
+
         if (res.status === 404) return null;
         if (!res.ok) throw new Error("API error");
+
         const data: ProductRecord = await res.json();
-        return { ...data, badge: data.badge ?? undefined };
+
+        return {
+            ...data,
+            badge: data.badge ?? undefined,
+        };
     } catch {
-        // Fall back to static data
+        // fallback to static data if API fails
         return getProductById(id) ?? null;
     }
 }
 
 interface PageProps {
-    params: Promise<{ id: string }>;
+    params: { id: string };
 }
 
+/* ----------------------------------------------------
+   Static generation
+---------------------------------------------------- */
 export async function generateStaticParams() {
-    // Keep using static data so Next.js can statically generate all product pages at build time.
     return staticProducts.map((p) => ({ id: p.id }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { id } = await params;
-    const product = await getProductFromApi(id);
-    if (!product) return { title: "Product Not Found" };
+/* ----------------------------------------------------
+   SEO Metadata
+---------------------------------------------------- */
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    const product = await getProductFromApi(params.id);
+
+    if (!product) {
+        return {
+            title: "Product Not Found",
+        };
+    }
+
     return {
         title: `${product.name} | Puja Kit Store Hyderabad`,
         description: product.description,
     };
 }
 
+/* ----------------------------------------------------
+   UI Maps
+---------------------------------------------------- */
 const emojiMap: Record<string, string> = {
     "ganesh-puja-kit": "🐘",
     "satyanarayana-puja-kit": "🪔",
@@ -63,9 +87,11 @@ const accentMap: Record<string, string> = {
     "daily-puja-kit": "bg-yellow-500",
 };
 
+/* ----------------------------------------------------
+   Page
+---------------------------------------------------- */
 export default async function ProductDetailPage({ params }: PageProps) {
-    const { id } = await params;
-    const product = await getProductFromApi(id);
+    const product = await getProductFromApi(params.id);
 
     if (!product) notFound();
 
@@ -74,261 +100,158 @@ export default async function ProductDetailPage({ params }: PageProps) {
     const accent = accentMap[product.id] ?? "bg-orange-600";
 
     const whatsappMsg = `Hello, I want to order ${product.name}`;
-    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(whatsappMsg)}`;
+    const whatsappUrl = `https://wa.me/919876543210?text=${encodeURIComponent(
+        whatsappMsg
+    )}`;
 
-    const relatedProducts = staticProducts.filter((p) => p.id !== product.id).slice(0, 3);
+    const relatedProducts = staticProducts
+        .filter((p) => p.id !== product.id)
+        .slice(0, 3);
 
     return (
         <div className="min-h-screen bg-amber-50/30">
 
-            {/* ═══════════════════════════════════════════
-          BREADCRUMB
-      ═══════════════════════════════════════════ */}
+            {/* Breadcrumb */}
             <div className="bg-white border-b border-orange-100">
                 <div className="container py-3.5 flex items-center gap-2 text-sm flex-wrap">
-                    <Link href="/" className="text-orange-500 hover:text-orange-700 transition-colors font-medium">
+                    <Link
+                        href="/"
+                        className="text-orange-500 hover:text-orange-700 transition-colors font-medium"
+                    >
                         Home
                     </Link>
+
                     <span className="text-orange-300">›</span>
-                    <Link href="/products" className="text-orange-500 hover:text-orange-700 transition-colors font-medium">
+
+                    <Link
+                        href="/products"
+                        className="text-orange-500 hover:text-orange-700 transition-colors font-medium"
+                    >
                         Products
                     </Link>
+
                     <span className="text-orange-300">›</span>
-                    <span className="text-orange-900 font-semibold truncate max-w-xs">{product.name}</span>
+
+                    <span className="text-orange-900 font-semibold truncate max-w-xs">
+                        {product.name}
+                    </span>
                 </div>
             </div>
 
-            {/* ═══════════════════════════════════════════
-          MAIN CONTENT
-      ═══════════════════════════════════════════ */}
+            {/* MAIN CONTENT */}
             <div className="container py-8 lg:py-14">
+
+                {/* GRID */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 mb-14">
 
-                    {/* ── LEFT: Large Product Image ── */}
-                    <div className="flex flex-col gap-4">
-                        <div
-                            className={`relative rounded-3xl bg-gradient-to-br ${gradient} overflow-hidden shadow-lg`}
-                            style={{ minHeight: "420px" }}
-                        >
-                            {/* Mandala background */}
-                            <div className="absolute inset-0 mandala-bg opacity-25" />
+                    {/* LEFT SIDE IMAGE */}
+                    <div
+                        className={`relative rounded-3xl bg-gradient-to-br ${gradient} overflow-hidden shadow-lg`}
+                        style={{ minHeight: "420px" }}
+                    >
+                        <div className="absolute inset-0 mandala-bg opacity-25" />
 
-                            {/* Decorative circles */}
-                            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/30 blur-2xl" />
-                            <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-orange-300/20 blur-2xl" />
-
-                            {/* Main emoji */}
-                            <div className="relative z-10 flex items-center justify-center h-full py-12 sm:py-16">
-                                <span
-                                    className="text-[80px] sm:text-[140px] leading-none select-none drop-shadow-xl"
-                                    style={{ animation: "float 3s ease-in-out infinite" }}
-                                >
-                                    {emoji}
-                                </span>
-                            </div>
-
-                            {/* Badge */}
-                            {product.badge && (
-                                <div className={`absolute top-5 right-5 ${accent} text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md z-20`}>
-                                    ⭐ {product.badge}
-                                </div>
-                            )}
-
-                            {/* Category pill */}
-                            <div className="absolute bottom-5 left-5 bg-white/80 backdrop-blur-sm text-orange-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm z-20">
-                                🏷️ {product.category}
-                            </div>
+                        <div className="flex items-center justify-center h-full py-12 sm:py-16">
+                            <span
+                                className="text-[80px] sm:text-[140px] leading-none select-none drop-shadow-xl"
+                                style={{ animation: "float 3s ease-in-out infinite" }}
+                            >
+                                {emoji}
+                            </span>
                         </div>
 
-                        {/* Thumbnail strip (decorative accents) */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            {["🪔", "📿", "🌺", "🥥"].map((icon, i) => (
-                                <div
-                                    key={i}
-                                    className="bg-white border-2 border-orange-100 hover:border-orange-400 rounded-2xl h-16 flex items-center justify-center text-2xl cursor-pointer transition-all shadow-sm hover:shadow-md"
-                                >
-                                    {icon}
-                                </div>
-                            ))}
-                        </div>
+                        {product.badge && (
+                            <div
+                                className={`absolute top-5 right-5 ${accent} text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md`}
+                            >
+                                ⭐ {product.badge}
+                            </div>
+                        )}
                     </div>
 
-                    {/* ── RIGHT: Product Info ── */}
-                    <div className="flex flex-col justify-start gap-6">
-                        {/* Name */}
-                        <div>
-                            <h1
-                                className="text-3xl sm:text-4xl font-bold text-orange-950 leading-tight mb-3"
-                                style={{ fontFamily: "'Cinzel', serif" }}
-                            >
-                                {product.name}
-                            </h1>
+                    {/* RIGHT SIDE INFO */}
+                    <div className="flex flex-col gap-6">
 
-                            {/* Rating & reviews */}
-                            <div className="flex items-center gap-3 mb-1">
-                                <div className="flex items-center gap-0.5">
-                                    {[...Array(5)].map((_, i) => (
-                                        <span key={i} className="text-amber-400 text-base">★</span>
-                                    ))}
-                                </div>
-                                <span className="text-orange-600 text-sm font-medium">4.9 (120+ orders)</span>
-                            </div>
-                        </div>
+                        <h1
+                            className="text-3xl sm:text-4xl font-bold text-orange-950"
+                            style={{ fontFamily: "'Cinzel', serif" }}
+                        >
+                            {product.name}
+                        </h1>
 
-                        {/* Description */}
-                        <p className="text-orange-800/75 leading-relaxed text-[15px] border-l-4 border-amber-400 pl-4">
+                        <p className="text-orange-800/75 leading-relaxed">
                             {product.description}
                         </p>
 
-                        {/* Price block */}
-                        <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl px-6 py-5 flex items-center justify-between flex-wrap gap-4">
-                            <div>
-                                <p className="text-orange-500 text-xs font-semibold uppercase tracking-wider mb-1">Price</p>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-4xl font-extrabold text-orange-700">₹{product.price}</span>
-                                    <span className="text-orange-400 text-base">/ kit</span>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full mb-1">
-                                    ✓ In Stock
-                                </span>
-                                <p className="text-orange-500 text-xs">Ready for delivery</p>
-                            </div>
+                        {/* PRICE */}
+                        <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl px-6 py-5">
+                            <span className="text-4xl font-extrabold text-orange-700">
+                                ₹{product.price}
+                            </span>
                         </div>
 
-                        {/* Primary CTA: Order on WhatsApp */}
+                        {/* WHATSAPP CTA */}
                         <a
                             href={whatsappUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-3 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-bold py-4 px-6 rounded-2xl text-lg transition-all shadow-xl hover:shadow-green-300/60 hover:-translate-y-0.5"
+                            className="flex items-center justify-center gap-3 bg-green-500 hover:bg-green-400 text-white font-bold py-4 px-6 rounded-2xl text-lg transition-all shadow-xl"
                         >
-                            <svg viewBox="0 0 32 32" className="w-7 h-7 fill-white flex-shrink-0">
-                                <path d="M16 .5C7.44.5.5 7.44.5 16c0 2.74.7 5.37 2.04 7.69L.5 31.5l8.09-2.12A15.43 15.43 0 0 0 16 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm7.68 18.59c-.42-.21-2.5-1.23-2.88-1.37-.39-.14-.67-.21-.95.21-.28.42-1.09 1.37-1.34 1.65-.25.28-.49.32-.91.1-.42-.21-1.78-.66-3.4-2.1-1.26-1.12-2.1-2.5-2.35-2.92-.25-.42-.03-.65.19-.86.2-.19.42-.49.63-.74.21-.25.28-.42.42-.7.14-.28.07-.53-.03-.74-.1-.21-.95-2.28-1.3-3.12-.34-.82-.69-.71-.95-.72l-.81-.01c-.28 0-.74.1-1.13.53-.39.42-1.47 1.44-1.47 3.5s1.51 4.06 1.72 4.34c.21.28 2.97 4.53 7.19 6.35.99.43 1.77.69 2.37.88.99.31 1.9.27 2.62.16.8-.12 2.5-1.02 2.85-2 .35-.98.35-1.82.25-2-.1-.17-.38-.27-.8-.49z" />
-                            </svg>
                             Order on WhatsApp
                         </a>
-
-                        {/* Secondary CTA: Call */}
-                        <a
-                            href="tel:+919876543210"
-                            className="flex items-center justify-center gap-2 bg-white hover:bg-orange-50 border-2 border-orange-300 hover:border-orange-500 text-orange-800 font-semibold py-3.5 px-6 rounded-2xl transition-all"
-                        >
-                            <span className="text-xl">📞</span>
-                            Call to Order: +91 98765 43210
-                        </a>
-
-                        {/* Trust badges */}
-                        <div className="grid grid-cols-2 gap-3 mt-1">
-                            {[
-                                { icon: "🌿", text: "100% Authentic" },
-                                { icon: "📦", text: "Neatly Packed" },
-                                { icon: "🚚", text: "Same-Day Delivery" },
-                                { icon: "💬", text: "Free Puja Guidance" },
-                            ].map((badge) => (
-                                <div
-                                    key={badge.text}
-                                    className="flex items-center gap-2 bg-white border border-orange-100 rounded-xl px-3 py-2.5 text-sm text-orange-900 shadow-sm"
-                                >
-                                    <span className="text-base">{badge.icon}</span>
-                                    <span className="font-medium">{badge.text}</span>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
 
-                {/* ═══════════════════════════════════════════
-            WHAT'S INCLUDED
-        ═══════════════════════════════════════════ */}
-                <div className="bg-white rounded-3xl border border-orange-100 shadow-sm overflow-hidden mb-10">
-                    {/* Section header */}
-                    <div className="bg-gradient-to-r from-orange-600 to-amber-500 px-8 py-5 flex items-center gap-3">
-                        <span className="text-2xl">📦</span>
-                        <div>
-                            <h2
-                                className="text-white font-bold text-xl"
-                                style={{ fontFamily: "'Cinzel', serif" }}
-                            >
-                                What&apos;s Included in This Kit
-                            </h2>
-                            <p className="text-orange-100 text-sm">{product.items.length} items — everything you need</p>
-                        </div>
-                    </div>
+                {/* ITEMS LIST */}
+                <div className="bg-white rounded-3xl border border-orange-100 shadow-sm p-8 mb-10">
+                    <h2 className="text-xl font-bold text-orange-900 mb-6">
+                        What's Included
+                    </h2>
 
-                    {/* Checklist grid */}
-                    <div className="p-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {product.items.map((item, index) => (
                             <div
                                 key={index}
-                                className="flex items-center gap-3 group bg-orange-50/50 hover:bg-orange-50 border border-orange-100 hover:border-orange-300 rounded-xl px-4 py-3.5 transition-all"
+                                className="flex items-center gap-3 bg-orange-50 border border-orange-100 rounded-xl px-4 py-3"
                             >
-                                {/* Check icon */}
-                                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-white stroke-[3]" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
-                                </div>
-                                <span className="text-orange-900 text-sm font-medium">{item}</span>
+                                <span className="text-green-600">✔</span>
+                                <span className="text-orange-900 text-sm">{item}</span>
                             </div>
                         ))}
                     </div>
-
-                    {/* Order nudge inside section */}
-                    <div className="mx-8 mb-8 bg-green-50 border border-green-200 rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div>
-                            <p className="text-green-800 font-semibold">Ready to order this kit?</p>
-                            <p className="text-green-600 text-sm">Click below and we&apos;ll get it delivered to you today.</p>
-                        </div>
-                        <a
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-shrink-0 inline-flex items-center gap-2 bg-green-500 hover:bg-green-400 text-white font-bold px-6 py-2.5 rounded-full transition-all shadow-md"
-                        >
-                            <svg viewBox="0 0 32 32" className="w-5 h-5 fill-white flex-shrink-0">
-                                <path d="M16 .5C7.44.5.5 7.44.5 16c0 2.74.7 5.37 2.04 7.69L.5 31.5l8.09-2.12A15.43 15.43 0 0 0 16 31.5C24.56 31.5 31.5 24.56 31.5 16S24.56.5 16 .5zm7.68 18.59c-.42-.21-2.5-1.23-2.88-1.37-.39-.14-.67-.21-.95.21-.28.42-1.09 1.37-1.34 1.65-.25.28-.49.32-.91.1-.42-.21-1.78-.66-3.4-2.1-1.26-1.12-2.1-2.5-2.35-2.92-.25-.42-.03-.65.19-.86.2-.19.42-.49.63-.74.21-.25.28-.42.42-.7.14-.28.07-.53-.03-.74-.1-.21-.95-2.28-1.3-3.12-.34-.82-.69-.71-.95-.72l-.81-.01c-.28 0-.74.1-1.13.53-.39.42-1.47 1.44-1.47 3.5s1.51 4.06 1.72 4.34c.21.28 2.97 4.53 7.19 6.35.99.43 1.77.69 2.37.88.99.31 1.9.27 2.62.16.8-.12 2.5-1.02 2.85-2 .35-.98.35-1.82.25-2-.1-.17-.38-.27-.8-.49z" />
-                            </svg>
-                            Order Now
-                        </a>
-                    </div>
                 </div>
 
-                {/* ═══════════════════════════════════════════
-            YOU MAY ALSO LIKE
-        ═══════════════════════════════════════════ */}
+                {/* RELATED PRODUCTS */}
                 {relatedProducts.length > 0 && (
                     <div>
-                        <h2
-                            className="text-2xl font-bold text-orange-900 mb-6"
-                            style={{ fontFamily: "'Cinzel', serif" }}
-                        >
-                            🕉️ You May Also Like
+                        <h2 className="text-2xl font-bold text-orange-900 mb-6">
+                            You May Also Like
                         </h2>
+
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                             {relatedProducts.map((p) => (
                                 <Link
                                     key={p.id}
                                     href={`/product/${p.id}`}
-                                    className="bg-white rounded-2xl border border-orange-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-5 flex items-center gap-4 group"
+                                    className="bg-white rounded-2xl border border-orange-100 p-5 flex items-center gap-4"
                                 >
-                                    <div className="w-16 h-16 rounded-xl bg-orange-50 flex items-center justify-center text-4xl flex-shrink-0">
-                                        {emojiMap[p.id] ?? "🪔"}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <div className="font-semibold text-orange-900 group-hover:text-orange-600 transition-colors text-sm leading-snug mb-1 truncate">
+                                    <div className="text-4xl">{emojiMap[p.id] ?? "🪔"}</div>
+
+                                    <div>
+                                        <div className="font-semibold text-orange-900 text-sm">
                                             {p.name}
                                         </div>
-                                        <div className="text-orange-600 font-bold text-base">₹{p.price}</div>
-                                        <div className="text-orange-400 text-xs">{p.category}</div>
+
+                                        <div className="text-orange-600 font-bold">
+                                            ₹{p.price}
+                                        </div>
                                     </div>
-                                    <span className="ml-auto text-orange-300 group-hover:text-orange-600 transition-colors text-lg flex-shrink-0">›</span>
                                 </Link>
                             ))}
                         </div>
                     </div>
                 )}
+
             </div>
         </div>
     );
